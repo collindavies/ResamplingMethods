@@ -1,0 +1,112 @@
+---
+title: "Resampling Methods"
+output: github_document
+---
+
+
+## P1
+
+Summary: Download the file 5.R.RData and load it into R using load("5.R.RData"). Consider the linear regression model of y on X1 and X2. What is the standard error for beta1?
+
+
+Task 1: Load data into R.
+
+```{r}
+load("5.R.RData")
+summary(Xy)
+```
+
+
+Task 2: Solve the linear regression model of y on x1 and x2.
+
+```{r}
+fit=lm(y~., data = Xy)
+fit
+out <- summary(fit)
+```
+
+
+Task 3: Return the standard error for beta1.
+
+```{r}
+out$coefficients[2 ,2]
+```
+
+
+Task 4: Next, plot the data using matplot(Xy,type="l").
+
+```{r}
+matplot(Xy,type="l")
+```
+
+
+## P2
+
+Summary: Now, use the (standard) bootstrap to estimate the standard error for beta1. To within 10%, what do you get?
+
+
+Task 1: Load libraries.
+
+```{r}
+require(ISLR)
+require(boot)
+```
+
+
+Task 2: Define bootstrap function.
+
+
+```{r}
+boot.fn=function(data, index) + return(coef(lm(y~., data=data, subset=index)))
+```
+
+
+Task 3: Perform bootstrap.
+
+```{r}
+set.seed(1)
+boot.fn(Xy, sample(1:1000, 1000, replace = TRUE))
+out2 <- boot(Xy, boot.fn, 1000)
+```
+
+
+Task 4: Return the standard error for beta1.
+
+```{r}
+out2
+sd(out2$t[ , 2])
+```
+
+
+## P3
+
+Summary: Finally, use the block bootstrap to estimate . Use blocks of 100 contiguous observations, and resample ten whole blocks with replacement then paste them together to construct each bootstrap time series. For example, one of your bootstrap resamples could be:
+
+  new.rows = c(101:200, 401:500, 101:200, 901:1000, 301:400, 1:100, 1:100, 801:900, 201:300, 701:800)
+
+  new.Xy = Xy[new.rows, ]
+
+To within 10%, what do you get?
+
+
+Task 1: Define time series bootstrap function.
+
+```{r}
+newboot.fn=function(data) + return(coef(lm(y~., data=data)))
+```
+
+
+Task 2: Perform bootstrap.
+
+```{r}
+set.seed(1)
+out3 <- tsboot(Xy, statistic = newboot.fn, R = 1000, l = 100, sim = "fixed")
+```
+
+
+Task 3: Return the standard error for beta1.
+
+```{r}
+out3
+sd(out3$t[ , 2])
+```
